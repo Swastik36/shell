@@ -10,6 +10,7 @@ Scope {
     id: root
 
     property bool launcherInterrupted
+    property bool launcherWasOpen
     readonly property bool hasFullscreen: Hypr.focusedWorkspace?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false
 
     // qmllint disable unresolved-type
@@ -64,13 +65,20 @@ Scope {
         // qmllint enable unresolved-type
         name: "launcher"
         description: "Toggle launcher"
-        onPressed: root.launcherInterrupted = false
+        onPressed: {
+            root.launcherInterrupted = false;
+            root.launcherWasOpen = ShellState.forActive().launcher;
+            if (root.launcherWasOpen) {
+                ShellState.forActive().launcher = false;
+            }
+        }
         onReleased: {
-            if (!root.launcherInterrupted && !root.hasFullscreen) {
+            if (!root.launcherInterrupted && !root.hasFullscreen && !root.launcherWasOpen) {
                 const screenState = ShellState.forActive();
-                screenState.launcher = !screenState.launcher;
+                screenState.launcher = true;
             }
             root.launcherInterrupted = false;
+            root.launcherWasOpen = false;
         }
     }
 
