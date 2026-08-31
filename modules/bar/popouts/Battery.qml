@@ -199,7 +199,7 @@ Column {
 
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
             anchors.margins: Tokens.padding.medium
             spacing: Tokens.spacing.small
 
@@ -218,11 +218,15 @@ Column {
                     spacing: 2
 
                     StyledText {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
                         text: BatteryControl.title
                         font: Tokens.font.body.builders.medium.weight(Font.Medium).build()
                     }
 
                     StyledText {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
                         text: BatteryControl.subtitle
                         color: Colours.palette.m3onSurfaceVariant
                         font: Tokens.font.body.builders.small.build()
@@ -231,14 +235,37 @@ Column {
 
                 StyledSwitch {
                     visible: BatteryControl.controlType === BatteryControl.BinaryConservation
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                     checked: BatteryControl.enabled
                     onToggled: BatteryControl.toggle()
+                }
+            }
+
+            RowLayout {
+                visible: BatteryControl.controlType === BatteryControl.DiscreteTiers
+                Layout.fillWidth: true
+                spacing: Tokens.spacing.extraSmall
+
+                Repeater {
+                    model: BatteryControl.supportedTiers
+
+                    TextButton {
+                        required property int modelData
+
+                        Layout.fillWidth: true
+                        isToggle: true
+                        type: TextButton.Tonal
+                        text: `${modelData}%`
+                        checked: BatteryControl.threshold === modelData
+                        onClicked: BatteryControl.setThreshold(modelData)
+                    }
                 }
             }
 
             StyledSlider {
                 visible: BatteryControl.controlType === BatteryControl.ContinuousRange
                 Layout.fillWidth: true
+                Layout.topMargin: Tokens.spacing.extraSmall
                 from: BatteryControl.minThreshold
                 to: BatteryControl.maxThreshold
                 value: BatteryControl.threshold
