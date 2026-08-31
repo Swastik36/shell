@@ -10,19 +10,15 @@
 namespace caelestia::services {
 
 BatteryControl::BatteryControl(QObject* parent)
-    : Service(parent)
-    , m_watcher(new QFileSystemWatcher(this)) {
+    : TickingService(parent) {
     detectInterface();
     if (m_isSupported) {
         refreshState();
-        m_watcher->addPath(m_path);
-        connect(m_watcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
-            refreshState();
-            if (!m_watcher->files().contains(path) && QFile::exists(path)) {
-                m_watcher->addPath(path);
-            }
-        });
     }
+}
+
+void BatteryControl::tick() {
+    refreshState();
 }
 
 bool BatteryControl::isSupported() const {

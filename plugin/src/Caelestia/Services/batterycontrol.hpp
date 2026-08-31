@@ -1,14 +1,13 @@
 #pragma once
 
-#include <qfilesystemwatcher.h>
 #include <qqmlintegration.h>
 #include <qstring.h>
 
-#include "service.hpp"
+#include "tickingservice.hpp"
 
 namespace caelestia::services {
 
-class BatteryControl : public Service {
+class BatteryControl : public TickingService {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
@@ -37,6 +36,9 @@ signals:
     void thresholdChanged();
     void pathChanged();
 
+protected:
+    void tick() override;
+
 private:
     void detectInterface();
     void refreshState();
@@ -47,7 +49,6 @@ private:
     bool m_isSupported = false;
     bool m_enabled = false;
     int m_threshold = 100;
-    QFileSystemWatcher* m_watcher = nullptr;
 };
 
 } // namespace caelestia::services
