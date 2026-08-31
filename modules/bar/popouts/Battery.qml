@@ -198,6 +198,8 @@ Column {
             type: IconButton.Filled
             isRound: true
             icon: "battery_saver"
+            implicitWidth: profiles.implicitHeight
+            implicitHeight: profiles.implicitHeight
             checked: BatteryControl.enabled
             onClicked: {
                 BatteryControl.toggle();
