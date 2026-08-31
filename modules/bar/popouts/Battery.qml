@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Layouts
 import Quickshell.Services.UPower
 import Caelestia.Config
 import Caelestia.Services
@@ -100,117 +101,148 @@ Column {
         }
     }
 
-    Row {
+    StyledRect {
+        id: profiles
+
+        property string current: {
+            const p = PowerProfiles.profile;
+            if (p === PowerProfile.PowerSaver)
+                return saver.icon;
+            if (p === PowerProfile.Performance)
+                return perf.icon;
+            return balance.icon;
+        }
+
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: Tokens.spacing.small
+        implicitWidth: saver.implicitHeight + balance.implicitHeight + perf.implicitHeight + Tokens.padding.medium * 2 + Tokens.spacing.largeIncreased * 2
+        implicitHeight: Math.max(saver.implicitHeight, balance.implicitHeight, perf.implicitHeight) + Tokens.padding.small
+        color: Colours.tPalette.m3surfaceContainer
+        radius: Tokens.rounding.full
 
         StyledRect {
-            id: profiles
+            id: indicator
 
-            property string current: {
-                const p = PowerProfiles.profile;
-                if (p === PowerProfile.PowerSaver)
-                    return saver.icon;
-                if (p === PowerProfile.Performance)
-                    return perf.icon;
-                return balance.icon;
-            }
-
-            implicitWidth: saver.implicitHeight + balance.implicitHeight + perf.implicitHeight + Tokens.padding.medium * 2 + Tokens.spacing.largeIncreased * 2
-            implicitHeight: Math.max(saver.implicitHeight, balance.implicitHeight, perf.implicitHeight) + Tokens.padding.small
-
-            color: Colours.tPalette.m3surfaceContainer
+            color: Colours.palette.m3primary
             radius: Tokens.rounding.full
+            state: profiles.current
 
-            StyledRect {
-                id: indicator
+            states: [
+                State {
+                    name: saver.icon
 
-                color: Colours.palette.m3primary
-                radius: Tokens.rounding.full
-                state: profiles.current
-
-                states: [
-                    State {
-                        name: saver.icon
-
-                        Fill {
-                            item: saver
-                        }
-                    },
-                    State {
-                        name: balance.icon
-
-                        Fill {
-                            item: balance
-                        }
-                    },
-                    State {
-                        name: perf.icon
-
-                        Fill {
-                            item: perf
-                        }
+                    Fill {
+                        item: saver
                     }
-                ]
+                },
+                State {
+                    name: balance.icon
 
-                transitions: Transition {
-                    AnchorAnim {}
+                    Fill {
+                        item: balance
+                    }
+                },
+                State {
+                    name: perf.icon
+
+                    Fill {
+                        item: perf
+                    }
                 }
-            }
+            ]
 
-            Profile {
-                id: saver
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: Tokens.padding.extraSmall
-
-                profile: PowerProfile.PowerSaver
-                icon: "energy_savings_leaf"
-            }
-
-            Profile {
-                id: balance
-
-                anchors.centerIn: parent
-
-                profile: PowerProfile.Balanced
-                icon: "balance"
-            }
-
-            Profile {
-                id: perf
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.right
-                anchors.rightMargin: Tokens.padding.extraSmall
-
-                profile: PowerProfile.Performance
-                icon: "rocket_launch"
+            transitions: Transition {
+                AnchorAnim {}
             }
         }
 
-        IconButton {
-            id: conservationBtn
+        Profile {
+            id: saver
 
-            visible: BatteryControl.isSupported
-            isToggle: true
-            type: IconButton.Filled
-            isRound: true
-            icon: "battery_saver"
-            implicitWidth: profiles.implicitHeight
-            implicitHeight: profiles.implicitHeight
-            scale: checked ? 0.90 : 1.0
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: Tokens.padding.extraSmall
+            profile: PowerProfile.PowerSaver
+            icon: "energy_savings_leaf"
+        }
 
-            Behavior on scale {
-                Anim {
-                    type: Anim.DefaultSpatial
+        Profile {
+            id: balance
+
+            anchors.centerIn: parent
+            profile: PowerProfile.Balanced
+            icon: "balance"
+        }
+
+        Profile {
+            id: perf
+
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: Tokens.padding.extraSmall
+            profile: PowerProfile.Performance
+            icon: "rocket_launch"
+        }
+    }
+
+    StyledRect {
+        id: batteryCard
+
+        visible: BatteryControl.isSupported
+        anchors.horizontalCenter: parent.horizontalCenter
+        implicitWidth: parent.width
+        implicitHeight: cardLayout.implicitHeight + Tokens.padding.medium * 2
+        color: Colours.tPalette.m3surfaceContainer
+        radius: Tokens.rounding.large
+
+        ColumnLayout {
+            id: cardLayout
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: Tokens.padding.medium
+            spacing: Tokens.spacing.small
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Tokens.spacing.small
+
+                MaterialIcon {
+                    text: "battery_saver"
+                    fontStyle: Tokens.font.icon.medium
+                    color: BatteryControl.enabled ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    StyledText {
+                        text: BatteryControl.title
+                        font: Tokens.font.body.builders.medium.weight(Font.Medium).build()
+                    }
+
+                    StyledText {
+                        text: BatteryControl.subtitle
+                        color: Colours.palette.m3onSurfaceVariant
+                        font: Tokens.font.body.builders.small.build()
+                    }
+                }
+
+                StyledSwitch {
+                    visible: BatteryControl.controlType === BatteryControl.BinaryConservation
+                    checked: BatteryControl.enabled
+                    onToggled: BatteryControl.toggle()
                 }
             }
 
-            checked: BatteryControl.enabled
-            onClicked: {
-                BatteryControl.toggle();
+            StyledSlider {
+                visible: BatteryControl.controlType === BatteryControl.ContinuousRange
+                Layout.fillWidth: true
+                from: BatteryControl.minThreshold
+                to: BatteryControl.maxThreshold
+                value: BatteryControl.threshold
+                onInteraction: v => BatteryControl.setThreshold(Math.round(v * (to - from) + from))
             }
         }
     }
