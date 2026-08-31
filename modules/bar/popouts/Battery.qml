@@ -200,6 +200,14 @@ Column {
             icon: "battery_saver"
             implicitWidth: profiles.implicitHeight
             implicitHeight: profiles.implicitHeight
+            scale: checked ? 0.90 : 1.0
+
+            Behavior on scale {
+                Anim {
+                    type: Anim.DefaultSpatial
+                }
+            }
+
             checked: BatteryControl.enabled
             onClicked: {
                 BatteryControl.toggle();
