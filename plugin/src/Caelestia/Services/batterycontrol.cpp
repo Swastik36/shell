@@ -152,7 +152,8 @@ bool BatteryControl::writeValue(const QString& val) {
     // 2. Privilege escalation fallback: run via pkexec so the system polkit agent pops up a password dialog
     const QString cmd = QStringLiteral("echo %1 | pkexec tee %2 > /dev/null").arg(val, m_path);
     auto* proc = new QProcess(this);
-    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this, proc]() {
+    proc->setProcessEnvironment(QProcessEnvironment::systemEnvironment());
+    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this, proc](int, QProcess::ExitStatus) {
         refreshState();
         proc->deleteLater();
     });
