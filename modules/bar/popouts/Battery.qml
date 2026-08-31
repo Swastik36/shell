@@ -5,6 +5,7 @@ import Quickshell.Services.UPower
 import Caelestia.Config
 import Caelestia.Services
 import qs.components
+import qs.components.controls
 import qs.services
 
 Column {
@@ -189,52 +190,17 @@ Column {
             }
         }
 
-        Loader {
-            id: conservationLoader
+        IconButton {
+            id: conservationBtn
 
-            anchors.verticalCenter: parent.verticalCenter
-            active: BatteryControl.isSupported
-
-            sourceComponent: StyledRect {
-                id: conservationBtn
-
-                implicitWidth: profiles.implicitHeight - 4
-                implicitHeight: profiles.implicitHeight - 4
-
-                radius: Tokens.rounding.full
-                color: BatteryControl.enabled ? Colours.palette.m3primary : Colours.tPalette.m3surfaceContainer
-
-                Behavior on color {
-                    CAnim {}
-                }
-
-                MaterialIcon {
-                    id: consIcon
-
-                    anchors.centerIn: parent
-                    text: "battery_saver"
-                    fontStyle: Tokens.font.icon.large
-                    color: BatteryControl.enabled ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
-                    fill: BatteryControl.enabled ? 1 : 0
-
-                    Behavior on color {
-                        CAnim {}
-                    }
-
-                    Behavior on fill {
-                        Anim {
-                            type: Anim.DefaultEffects
-                        }
-                    }
-                }
-
-                StateLayer {
-                    radius: Tokens.rounding.full
-                    color: BatteryControl.enabled ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
-                    onClicked: {
-                        BatteryControl.toggle();
-                    }
-                }
+            visible: BatteryControl.isSupported
+            isToggle: true
+            type: IconButton.Filled
+            isRound: true
+            icon: "battery_saver"
+            checked: BatteryControl.enabled
+            onClicked: {
+                BatteryControl.toggle();
             }
         }
     }
